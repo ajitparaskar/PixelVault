@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import imageRoutes from './routes/images.routes.js';
+import authRoutes from './routes/auth.routes.js';
 
 dotenv.config();
 
@@ -15,6 +16,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/api/images', imageRoutes);
+app.use('/api/auth', authRoutes);
 
 // Health check route
 app.get('/health', (req, res) => res.status(200).send('API is running'));

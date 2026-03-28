@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
+import { AuthContext } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Filters from './components/Filters';
 import GalleryGrid from './components/GalleryGrid';
 import UploadModal from './components/UploadModal';
 import LightboxModal from './components/LightboxModal';
+import AuthModal from './components/AuthModal';
 
 function App() {
   const [images, setImages] = useState([]);
@@ -13,14 +15,17 @@ function App() {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
   const [collection, setCollection] = useState('All');
+  const [view, setView] = useState('public');
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
 
   const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
 
   const [lightboxData, setLightboxData] = useState({ open: false, index: 0 });
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/images';
+  const { token, apiUrl: baseApiUrl } = useContext(AuthContext);
+  const API_URL = `${baseApiUrl}/images`;
 
   const fetchImages = async (pageNum = 1, append = false) => {
     if (pageNum === 1) setLoading(true);
@@ -30,9 +35,11 @@ function App() {
       let url = `${API_URL}?page=${pageNum}&limit=12&`;
       if (category !== 'All') url += `category=${category}&`;
       if (collection !== 'All') url += `collectionName=${collection}&`;
-      if (search) url += `search=${search}`;
+      if (search) url += `search=${search}&`;
+      if (view) url += `view=${view}`;
 
-      const res = await axios.get(url);
+      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+      const res = await axios.get(url, config);
       if (res.data.success) {
         if (append) {
           setImages(prev => [...prev, ...res.data.data]);
@@ -50,12 +57,17 @@ function App() {
   };
 
   useEffect(() => {
+    if (!token && view !== 'public') {
+      setView('public');
+      return; // Will re-trigger useEffect with view === 'public'
+    }
+
     setPage(1);
     const debounce = setTimeout(() => {
       fetchImages(1, false);
     }, 300);
     return () => clearTimeout(debounce);
-  }, [category, collection, search]);
+  }, [category, collection, search, view, token]);
 
   const loadMore = () => {
     if (loadingMore) return;
@@ -68,7 +80,8 @@ function App() {
     if (!window.confirm('Are you sure you want to delete this image?')) return;
 
     try {
-      const res = await axios.delete(`${API_URL}/${id}`);
+      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+      const res = await axios.delete(`${API_URL}/${id}`, config);
       if (res.data.success) {
         setImages(images.filter(img => img._id !== id));
       }
@@ -92,12 +105,14 @@ function App() {
         onUploadClick={() => setIsUploadOpen(true)}
         search={search}
         setSearch={setSearch}
+        onLoginClick={() => setIsAuthOpen(true)}
       />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Filters
           category={category} setCategory={setCategory}
           collection={collection} setCollection={setCollection}
+          view={view} setView={setView}
         />
 
         {loading ? (
@@ -142,6 +157,10 @@ function App() {
             fetchImages(1, false);
           }}
         />
+      )}
+
+      {isAuthOpen && (
+        <AuthModal onClose={() => setIsAuthOpen(false)} />
       )}
 
       {lightboxData.open && (

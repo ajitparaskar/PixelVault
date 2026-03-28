@@ -24,6 +24,16 @@ const imageSchema = new mongoose.Schema({
     default: 'Default',
     trim: true,
   },
+  user: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'User',
+    required: false, // Make it optional to avoid breaking existing anonymous uploads
+  },
+  visibility: {
+    type: String,
+    enum: ['public', 'private'],
+    default: 'public',
+  },
 }, {
   timestamps: true,
 });

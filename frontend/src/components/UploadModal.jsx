@@ -1,5 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useContext } from 'react';
 import { useDropzone } from 'react-dropzone';
+import { AuthContext } from '../context/AuthContext';
 import axios from 'axios';
 import { X, UploadCloud, Image as ImageIcon } from 'lucide-react';
 
@@ -12,8 +13,11 @@ const UploadModal = ({ onClose, apiUrl, onSuccess }) => {
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState(CATEGORIES[0]);
   const [collection, setCollection] = useState(COLLECTIONS[0]);
+  const [visibility, setVisibility] = useState('public');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  
+  const { token } = useContext(AuthContext);
 
   const onDrop = useCallback(acceptedFiles => {
     const selected = acceptedFiles[0];
@@ -52,10 +56,14 @@ const UploadModal = ({ onClose, apiUrl, onSuccess }) => {
     formData.append('title', title);
     formData.append('category', category);
     formData.append('collectionName', collection);
+    formData.append('visibility', visibility);
 
     try {
       const res = await axios.post(`${apiUrl}/upload`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`
+        }
       });
       if (res.data.success) {
         onSuccess(res.data.data);
@@ -130,7 +138,7 @@ const UploadModal = ({ onClose, apiUrl, onSuccess }) => {
               />
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Category</label>
                 <select 
@@ -150,6 +158,18 @@ const UploadModal = ({ onClose, apiUrl, onSuccess }) => {
                   className="w-full border border-slate-300 rounded-lg px-4 py-2.5 bg-white focus:ring-2 focus:ring-blue-500 outline-none"
                 >
                   {COLLECTIONS.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Visibility</label>
+                <select 
+                  value={visibility}
+                  onChange={e => setVisibility(e.target.value)}
+                  className="w-full border border-slate-300 rounded-lg px-4 py-2.5 bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+                >
+                  <option value="public">Public</option>
+                  <option value="private">Private</option>
                 </select>
               </div>
             </div>
