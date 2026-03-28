@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import { fetchMe, loginUser, registerUser } from '../services/api';
 
 export const AuthContext = createContext();
 
@@ -7,10 +7,6 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(localStorage.getItem('token'));
-  
-  const apiUrl = import.meta.env.VITE_API_URL 
-    ? import.meta.env.VITE_API_URL.replace('/images', '') 
-    : 'http://localhost:5000/api';
 
   useEffect(() => {
     const loadUser = async () => {
@@ -20,12 +16,7 @@ export const AuthProvider = ({ children }) => {
       }
       
       try {
-        const res = await axios.get(`${apiUrl}/auth/me`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-        
+        const res = await fetchMe();
         if (res.data.success) {
           setUser(res.data.data);
         }
@@ -38,15 +29,15 @@ export const AuthProvider = ({ children }) => {
     };
 
     loadUser();
-  }, [token, apiUrl]);
+  }, [token]);
 
   const login = async (email, password) => {
     try {
-      const res = await axios.post(`${apiUrl}/auth/login`, { email, password });
+      const res = await loginUser({ email, password });
       if (res.data.success) {
-        localStorage.setItem('token', res.data.token);
-        setToken(res.data.token);
-        setUser(res.data.user);
+        localStorage.setItem('token', res.data.data.token);
+        setToken(res.data.data.token);
+        setUser(res.data.data.user);
         return { success: true };
       }
     } catch (error) {
@@ -59,11 +50,11 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (username, email, password) => {
     try {
-      const res = await axios.post(`${apiUrl}/auth/register`, { username, email, password });
+      const res = await registerUser({ username, email, password });
       if (res.data.success) {
-        localStorage.setItem('token', res.data.token);
-        setToken(res.data.token);
-        setUser(res.data.user);
+        localStorage.setItem('token', res.data.data.token);
+        setToken(res.data.data.token);
+        setUser(res.data.data.user);
         return { success: true };
       }
     } catch (error) {
@@ -87,8 +78,7 @@ export const AuthProvider = ({ children }) => {
       loading,
       login,
       register,
-      logout,
-      apiUrl
+      logout
     }}>
       {children}
     </AuthContext.Provider>

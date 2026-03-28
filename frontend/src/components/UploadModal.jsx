@@ -1,13 +1,13 @@
 import { useState, useCallback, useContext } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { AuthContext } from '../context/AuthContext';
-import axios from 'axios';
+import { uploadImage } from '../services/api';
 import { X, UploadCloud, Image as ImageIcon } from 'lucide-react';
 
 const CATEGORIES = ['Uncategorized', 'Nature', 'City', 'Abstract', 'People', 'Animals'];
 const COLLECTIONS = ['Default', 'Favorites', 'Vacation', 'Work'];
 
-const UploadModal = ({ onClose, apiUrl, onSuccess }) => {
+const UploadModal = ({ onClose, onSuccess }) => {
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [title, setTitle] = useState('');
@@ -59,12 +59,7 @@ const UploadModal = ({ onClose, apiUrl, onSuccess }) => {
     formData.append('visibility', visibility);
 
     try {
-      const res = await axios.post(`${apiUrl}/upload`, formData, {
-        headers: { 
-          'Content-Type': 'multipart/form-data',
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const res = await uploadImage(formData);
       if (res.data.success) {
         onSuccess(res.data.data);
       }
