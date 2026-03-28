@@ -15,12 +15,12 @@ function App() {
   const [collection, setCollection] = useState('All');
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
-  
+
   const [isUploadOpen, setIsUploadOpen] = useState(false);
-  
+
   const [lightboxData, setLightboxData] = useState({ open: false, index: 0 });
 
-  const API_URL = 'http://localhost:5000/api/images';
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/images';
 
   const fetchImages = async (pageNum = 1, append = false) => {
     if (pageNum === 1) setLoading(true);
@@ -31,7 +31,7 @@ function App() {
       if (category !== 'All') url += `category=${category}&`;
       if (collection !== 'All') url += `collectionName=${collection}&`;
       if (search) url += `search=${search}`;
-      
+
       const res = await axios.get(url);
       if (res.data.success) {
         if (append) {
@@ -66,7 +66,7 @@ function App() {
 
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this image?')) return;
-    
+
     try {
       const res = await axios.delete(`${API_URL}/${id}`);
       if (res.data.success) {
@@ -88,33 +88,33 @@ function App() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <Navbar 
-        onUploadClick={() => setIsUploadOpen(true)} 
+      <Navbar
+        onUploadClick={() => setIsUploadOpen(true)}
         search={search}
         setSearch={setSearch}
       />
-      
+
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Filters 
+        <Filters
           category={category} setCategory={setCategory}
           collection={collection} setCollection={setCollection}
         />
-        
+
         {loading ? (
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
         ) : (
           <>
-            <GalleryGrid 
-              images={images} 
+            <GalleryGrid
+              images={images}
               onImageClick={openLightbox}
               onDelete={handleDelete}
             />
-            
+
             {hasMore && (
               <div className="flex justify-center mt-12 mb-4">
-                <button 
+                <button
                   onClick={loadMore}
                   disabled={loadingMore}
                   className="px-8 py-3 bg-white border border-slate-200 hover:border-blue-500 hover:text-blue-600 focus:ring-4 focus:ring-blue-100 text-slate-700 font-medium rounded-full transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:text-slate-700 disabled:cursor-not-allowed flex items-center gap-3"
@@ -133,8 +133,8 @@ function App() {
       </main>
 
       {isUploadOpen && (
-        <UploadModal 
-          onClose={() => setIsUploadOpen(false)} 
+        <UploadModal
+          onClose={() => setIsUploadOpen(false)}
           apiUrl={API_URL}
           onSuccess={() => {
             setIsUploadOpen(false);
@@ -145,7 +145,7 @@ function App() {
       )}
 
       {lightboxData.open && (
-        <LightboxModal 
+        <LightboxModal
           images={images}
           currentIdx={lightboxData.index}
           onClose={closeLightbox}
