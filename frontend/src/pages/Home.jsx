@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useImages } from '../hooks/useImages';
 import Navbar from '../components/Navbar';
 import Filters from '../components/Filters';
@@ -23,7 +23,7 @@ const Home = () => {
   const [lightboxData, setLightboxData] = useState({ open: false, index: 0 });
 
   const openLightbox = (index) => setLightboxData({ open: true, index });
-  const closeLightbox = () => setLightboxData({ ...lightboxData, open: false });
+  const closeLightbox = () => setLightboxData((prev) => ({ ...prev, open: false }));
 
   return (
     <div className="min-h-screen bg-slate-50">

@@ -1,5 +1,4 @@
 import { Trash2, User as UserIcon } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 
@@ -9,12 +8,7 @@ const ImageCard = ({ image, onClick, onDelete }) => {
   // Check if current user owns the image (fallback for legacy images: true if no user attached)
   const isOwner = !image.user || (user && image.user && (image.user._id === user.id || image.user.id === user.id));
   return (
-    <motion.div 
-      layout
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      transition={{ duration: 0.3 }}
+    <div
       className="group relative rounded-xl overflow-hidden cursor-pointer shadow-sm hover:shadow-xl transition-all duration-300"
       onClick={onClick}
     >
@@ -58,7 +52,7 @@ const ImageCard = ({ image, onClick, onDelete }) => {
           </button>
         )}
       </div>
-    </motion.div>
+    </div>
   );
 };
 

@@ -1,6 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { X, ChevronLeft, ChevronRight, Maximize2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const LightboxModal = ({ images, currentIdx, onClose }) => {
   const [index, setIndex] = useState(currentIdx);
@@ -50,13 +49,7 @@ const LightboxModal = ({ images, currentIdx, onClose }) => {
         </div>
       </div>
 
-      <AnimatePresence mode="wait">
-        <motion.div 
-          key={image._id}
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 1.05 }}
-          transition={{ duration: 0.2, ease: "easeOut" }}
+      <div
           className="relative w-full h-full flex items-center justify-center p-4 sm:p-12 mb-16 sm:mb-0"
           onClick={onClose} // clicking outside image closes it
         >
@@ -84,8 +77,7 @@ const LightboxModal = ({ images, currentIdx, onClose }) => {
               <ChevronRight size={32} />
             </button>
           )}
-        </motion.div>
-      </AnimatePresence>
+      </div>
     </div>
   );
 };

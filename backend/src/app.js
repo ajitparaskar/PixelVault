@@ -1,11 +1,15 @@
+import './config/env.js';
 import express from 'express';
 import cors from 'cors';
 import { errorHandler } from './middleware/error.middleware.js';
 
 const app = express();
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map((origin) => origin.trim()).filter(Boolean)
+  : true;
 
 app.use(cors({
-    origin: process.env.CORS_ORIGIN || "*",
+    origin: allowedOrigins,
     credentials: true
 }));
 app.use(express.json());

@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useCallback } from 'react';
 import { fetchImages as fetchImagesApi, deleteImage as deleteImageApi } from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 
@@ -15,7 +15,7 @@ export const useImages = () => {
 
   const { token } = useContext(AuthContext);
 
-  const fetchImages = async (pageNum = 1, append = false) => {
+  const fetchImages = useCallback(async (pageNum = 1, append = false) => {
     if (pageNum === 1) setLoading(true);
     else setLoadingMore(true);
 
@@ -28,12 +28,18 @@ export const useImages = () => {
 
       const res = await fetchImagesApi(params);
       if (res.data.success) {
+        const payload = res.data.data;
+        const fetchedImages = Array.isArray(payload) ? payload : payload?.data || [];
+        const moreAvailable = typeof res.data.hasMore === 'boolean'
+          ? res.data.hasMore
+          : Boolean(payload?.hasMore);
+
         if (append) {
-          setImages(prev => [...prev, ...res.data.data]);
+          setImages(prev => [...prev, ...fetchedImages]);
         } else {
-          setImages(res.data.data);
+          setImages(fetchedImages);
         }
-        setHasMore(res.data.hasMore);
+        setHasMore(moreAvailable);
       }
     } catch (error) {
       console.error('Error fetching images:', error);
@@ -41,7 +47,7 @@ export const useImages = () => {
       if (pageNum === 1) setLoading(false);
       else setLoadingMore(false);
     }
-  };
+  }, [category, collection, search, view]);
 
   useEffect(() => {
     if (!token && view !== 'public') {
@@ -54,7 +60,7 @@ export const useImages = () => {
       fetchImages(1, false);
     }, 300);
     return () => clearTimeout(debounce);
-  }, [category, collection, search, view, token]);
+  }, [category, collection, search, view, token, fetchImages]);
 
   const loadMore = () => {
     if (loadingMore) return;
@@ -69,7 +75,7 @@ export const useImages = () => {
     try {
       const res = await deleteImageApi(id);
       if (res.data.success) {
-        setImages(images.filter(img => img._id !== id));
+        setImages((prev) => prev.filter((img) => img._id !== id));
       }
     } catch (error) {
       console.error('Error deleting image:', error);

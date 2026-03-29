@@ -1,7 +1,10 @@
 import axios from 'axios';
 
+// Ensure VITE_API_URL can be either root (e.g. https://host.com) or include /api/v1
+const apiHost = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/+$/, '');
+const apiBaseUrl = apiHost.endsWith('/api/v1') ? apiHost : `${apiHost}/api/v1`;
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1',
+  baseURL: apiBaseUrl,
 });
 
 // Interceptor to add Authorization header

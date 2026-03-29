@@ -1,6 +1,5 @@
-import { useState, useCallback, useContext } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { AuthContext } from '../context/AuthContext';
 import { uploadImage } from '../services/api';
 import { X, UploadCloud, Image as ImageIcon } from 'lucide-react';
 
@@ -17,8 +16,6 @@ const UploadModal = ({ onClose, onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   
-  const { token } = useContext(AuthContext);
-
   const onDrop = useCallback(acceptedFiles => {
     const selected = acceptedFiles[0];
     if (selected) {
@@ -40,6 +37,14 @@ const UploadModal = ({ onClose, onSuccess }) => {
     },
     maxFiles: 1
   });
+
+  useEffect(() => {
+    return () => {
+      if (preview) {
+        URL.revokeObjectURL(preview);
+      }
+    };
+  }, [preview]);
 
   const handleUpload = async (e) => {
     e.preventDefault();
@@ -111,7 +116,13 @@ const UploadModal = ({ onClose, onSuccess }) => {
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
                 <button 
                   type="button" 
-                  onClick={() => { setFile(null); setPreview(null); }}
+                  onClick={() => {
+                    if (preview) {
+                      URL.revokeObjectURL(preview);
+                    }
+                    setFile(null);
+                    setPreview(null);
+                  }}
                   className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg font-medium backdrop-blur-md"
                 >
                   Remove Image

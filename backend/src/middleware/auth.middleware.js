@@ -1,3 +1,4 @@
+import '../config/env.js';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 
@@ -23,6 +24,9 @@ export const protect = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret_key');
 
     req.user = await User.findById(decoded.id);
+    if (!req.user) {
+      return res.status(401).json({ success: false, message: 'Not authorized to access this route' });
+    }
 
     next();
   } catch (err) {
@@ -49,6 +53,9 @@ export const optionalProtect = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret_key');
     req.user = await User.findById(decoded.id);
+    if (!req.user) {
+      req.user = null;
+    }
     next();
   } catch (err) {
     req.user = null;

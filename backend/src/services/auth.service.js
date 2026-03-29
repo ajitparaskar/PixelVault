@@ -2,6 +2,10 @@ import User from '../models/User.js';
 import { ApiError } from '../utils/ApiError.js';
 
 export const registerUser = async (username, email, password) => {
+    if (!username || !email || !password) {
+        throw new ApiError(400, 'Username, email and password are required');
+    }
+
     try {
         const user = await User.create({ username, email, password });
         return user;
